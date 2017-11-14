@@ -15,9 +15,13 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from webtraffic import views
 
 urlpatterns = [
 	url(r'^webtraffic/',include('webtraffic.urls')),
     url(r'^admin/', admin.site.urls),
-    
+    url(r'^sentdata/$', views.sent_data),
+    url(r'^receiveddata/$', views.received_data),
+    url(r'^sentdata/(?P<pk>\d+)/$', views.sent_data_detail),
+    url(r'^receiveddata/(?P<pk>\d+)/$', views.received_data_detail),
 ]
