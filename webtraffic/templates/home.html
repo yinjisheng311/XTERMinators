@@ -1,69 +1,48 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<title>Web Traffic Monitor</title>
-{% include 'snippets/css.html' %}
-{% include 'snippets/js.html' %}
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
 <h1 style="text-align: center;margin:50px">Web Traffic Monitor</h1>
 <!-- <div style="margin:50px auto"> -->
 <div style="display: flex; justify-content: center; ">
-<button type="button" class="btn btn-outline-warning btn-lg">Start Monitoring</button>
+<button type="button" class="btn btn-outline-warning btn-lg" id="start">Start Monitoring</button>
 </div>
 <div style="display: flex; justify-content: center; align-content: center; ">
 <canvas id="myChart"  style="display: block; margin: 50px auto; max-width: 800px"></canvas>
 </div>
 <script>
-
+var noOfhost={{ hosts }}.length;
+var hostlabels=[];
+for(i=0;i<noOfhost;i++){
+    hostname="host"+i;
+    hostlabels[i]=hostname;
+}
+var bgcolors=[];
+for(i=0;i<noOfhost;i++){
+    fraction=255/(noOfhost+2);
+    r=Math.round(255-fraction/1.5);
+    g=Math.round(fraction*(i+2));
+    b=Math.round(255-fraction*(i+2));
+    hostcolor="rgb("+r+","+g+","+b+")";
+    bgcolors[i]=hostcolor;
+}
 var ctx = document.getElementById("myChart").getContext('2d');
+
 var myChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
     datasets: [{
     	label:"Traffic Summary",
-        data: [10, 20, 30],
-        backgroundColor:[
-    "rgb(255, 99, 132)",
-    "rgb(54, 162, 235)",
-    "rgb(255, 205, 86)"
-    ]
+        data: {{ hosts }},
+        backgroundColor:bgcolors
 
     }],
 
-    labels: [
-        'Red',
-        'Yellow',
-        'Blue'
-    ]
+    labels: hostlabels
  
 }
 });
 $(document).ready( 
     function () {
-        var ctx = document.getElementById("myChart").getContext("2d");
-        var myChart = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-    datasets: [{
-    	label:"Traffic Summary",
-        data: [10, 20, 30],
-        backgroundColor:[
-    "rgb(255, 99, 132)",
-    "rgb(54, 162, 235)",
-    "rgb(255, 205, 86)"
-    ]
 
-    }],
-
-    labels: [
-        'host1',
-        'host2',
-        'host3'
-    ]
- 
-}
-});
 
 $("#myChart").click( 
         function(evt){
@@ -80,7 +59,7 @@ $("#myChart").click(
 
       //get value by index      
       var value = myChart.data.datasets[0].data[clickedElementindex];
-      var url = "http://127.0.0.1:8000/webtraffic/" + label;
+      var url = "http://127.0.0.1:8080/webtraffic/" + label+"/";
       window.location.replace(url);
 
    }
@@ -91,7 +70,7 @@ $("#myChart").click(
                 }
             );
 </script>
-
+{% endblock %}
 
 </body>
 </html>

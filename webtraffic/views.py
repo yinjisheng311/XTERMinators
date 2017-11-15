@@ -11,7 +11,8 @@ from django.db import connection
 # Create your views here.
 def home_view(request):
 	template_name='home.html'
-	return render(request,template_name)
+	context={'hosts':[20,20,20,30,50]}
+	return render(request,template_name,context)
 
 def host_view(request,host_name):
 	template_name='host.html'
