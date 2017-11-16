@@ -21,3 +21,5 @@ pip install Flask
 1. Change directory into the folder containing main.py
 2. Run ```sudo python main.py```
 3. Open the link at ```http://127.0.0.1:5000/``` to start interacting with the web application.
+
+![alt text](https://github.com/yinjisheng311/XTERMinators/blob/master/Screenshot1.png)
