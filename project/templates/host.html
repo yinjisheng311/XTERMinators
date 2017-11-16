@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Hi {{ host }}</h1>
+{%if hostid %}
+<h1>Hi {{ hostid }}</h1>
 
 {% endblock %}

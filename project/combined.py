@@ -58,19 +58,25 @@ def traffic_monitor_callback(pkt):
     
         #return 'Packet #{}: {} ==> {}'.format(counter, packet[0][1].src, packet[0][1].dst)
 
+def start_sniffing():
+	sniff(iface=interface, prn=traffic_monitor_callback, store=False,
+	      timeout=sample_interval)
 
-sniff(iface=interface, prn=traffic_monitor_callback, store=False,
-      timeout=sample_interval)
+	print 'started running'
+	toReturnSpeed = []
+	toReturnHost = []
+	toReturnCounter = []
+	for host, total in traffic.most_common(10):
+	    host,_ = host
+	    toReturnHost.append(host)
+	    toReturnSpeed.append(human(float(total)/sample_interval))
+	    print "%s/s: %s" % (human(float(total)/sample_interval), host)
 
-
-
-for host, total in traffic.most_common(10):
-    host,_ = host
-    print "%s/s: %s" % (human(float(total)/sample_interval), host)
-
-for host,counter in packet_host.iteritems():
-    print host,counter
-
+	for host,counter in packet_host.iteritems():
+	    toReturnCounter.append(counter)
+	    print host,counter
+	
+	return toReturnSpeed, toReturnHost, toReturnCounter
 
 # combine=[,packet_host]
 # print combine

@@ -3,18 +3,17 @@
 <h1 style="text-align: center;margin:50px">Web Traffic Monitor</h1>
 <!-- <div style="margin:50px auto"> -->
 <div style="display: flex; justify-content: center; ">
-<button type="button" class="btn btn-outline-warning btn-lg" id="start">Start Monitoring</button>
+<form action="/monitor/" method="post">
+<button type="submit" class="btn btn-outline-warning btn-lg" id="start" >Start Monitoring</button>
+</form>
 </div>
-<div style="display: flex; justify-content: center; align-content: center; ">
-<canvas id="myChart"  style="display: block; margin: 50px auto; max-width: 800px"></canvas>
+
+<div style="display: flex; justify-content: center; align-content: center; " >
+<canvas  id="myChart" style="display:block margin: 50px auto; max-width: 800px"></canvas>
 </div>
 <script>
-var noOfhost={{ hosts }}.length;
-var hostlabels=[];
-for(i=0;i<noOfhost;i++){
-    hostname="host"+i;
-    hostlabels[i]=hostname;
-}
+
+var noOfhost={{hosts| safe}};
 var bgcolors=[];
 for(i=0;i<noOfhost;i++){
     fraction=255/(noOfhost+2);
@@ -24,6 +23,7 @@ for(i=0;i<noOfhost;i++){
     hostcolor="rgb("+r+","+g+","+b+")";
     bgcolors[i]=hostcolor;
 }
+
 var ctx = document.getElementById("myChart").getContext('2d');
 
 var myChart = new Chart(ctx, {
@@ -31,15 +31,16 @@ var myChart = new Chart(ctx, {
     data: {
     datasets: [{
     	label:"Traffic Summary",
-        data: {{ hosts }},
+        data: {{counters | safe }},
         backgroundColor:bgcolors
 
     }],
 
-    labels: hostlabels
+    labels:{{hosts | safe}}
  
 }
 });
+
 $(document).ready( 
     function () {
 
@@ -59,18 +60,19 @@ $("#myChart").click(
 
       //get value by index      
       var value = myChart.data.datasets[0].data[clickedElementindex];
-      var url = "http://127.0.0.1:8080/webtraffic/" + label+"/";
+      var url = "http://127.0.0.1:5000/host/" + (clickedElementindex+1) +"/";
       window.location.replace(url);
 
    }
     
 
                         }
-                    );                  
+                    ); 
+
+
                 }
             );
+
+
 </script>
 {% endblock %}
-
-</body>
-</html>
