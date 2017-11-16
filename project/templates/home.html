@@ -12,8 +12,8 @@
 <canvas  id="myChart" style="display:block margin: 50px auto; max-width: 800px"></canvas>
 </div>
 <script>
-
-var noOfhost={{hosts| safe}};
+var hosts={{hosts| safe}};
+var noOfhost=hosts.length;
 var bgcolors=[];
 for(i=0;i<noOfhost;i++){
     fraction=255/(noOfhost+2);
@@ -23,7 +23,6 @@ for(i=0;i<noOfhost;i++){
     hostcolor="rgb("+r+","+g+","+b+")";
     bgcolors[i]=hostcolor;
 }
-
 var ctx = document.getElementById("myChart").getContext('2d');
 
 var myChart = new Chart(ctx, {
@@ -60,7 +59,7 @@ $("#myChart").click(
 
       //get value by index      
       var value = myChart.data.datasets[0].data[clickedElementindex];
-      var url = "http://127.0.0.1:5000/host/" + (clickedElementindex+1) +"/";
+      var url = "http://127.0.0.1:5000/host?hostsIndex=" + (clickedElementindex);
       window.location.replace(url);
 
    }

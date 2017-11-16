@@ -75,8 +75,48 @@ def start_sniffing():
 	for host,counter in packet_host.iteritems():
 	    toReturnCounter.append(counter)
 	    print host,counter
+
 	
 	return toReturnSpeed, toReturnHost, toReturnCounter
+
+
+def getData():
+ 
+    sniff(iface=interface, prn=traffic_monitor_callback, store=False,timeout=sample_interval)
+ 
+ 
+    #compute and combien results of bandwidth
+    for host, total in traffic.most_common(10):
+        host,_ = host
+        rate = human(float(total)/sample_interval)
+        hosts[host]=rate
+        #print "%s/s: %s" % (rate,host)
+   
+ 
+    #We combine the outputs into one list
+    # [{"type":"host","ip":"ipadd,"bandwidth":"some_speed","packetCount":someInt},
+    #  {"type":"host","ip":"ipadd,"bandwidth":"some_speed","packetCount":someInt},
+    #  {"type":"host","ip":"ipadd,"bandwidth":"some_speed","packetCount":someInt}]
+ 
+    combinedOutput= []
+    for host,counter in packet_host.items():
+        combinedOutput.append({"type":"host","ip":host,"packetCount":counter,"bandwidth":"0"})
+ 
+    for host,bandwidth in hosts.items():
+       
+        #If host is already in combined output, merely append the bandwidth to it.
+        #otherwise, add a new line
+        addNewLine = True
+        for storedHost in combinedOutput:
+            if host == storedHost['ip']:
+                storedHost['bandwidth']=bandwidth+"/s"
+                addNewLine=False
+       
+        if addNewLine:
+            combinedOutput.append({"type":"host","ip":host,"packetCount":0,'bandwidth':bandwidth})
+ 
+ 
+    return combinedOutput
 
 # combine=[,packet_host]
 # print combine
