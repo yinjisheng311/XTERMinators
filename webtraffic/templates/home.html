@@ -3,12 +3,14 @@
 <h1 style="text-align: center;margin:50px">Web Traffic Monitor</h1>
 <!-- <div style="margin:50px auto"> -->
 <div style="display: flex; justify-content: center; ">
-<button type="button" class="btn btn-outline-warning btn-lg" id="start">Start Monitoring</button>
+<button type="button" class="btn btn-outline-warning btn-lg" id="start" onclick="unhide()" >Start Monitoring</button>
 </div>
-<div style="display: flex; justify-content: center; align-content: center; ">
-<canvas id="myChart"  style="display: block; margin: 50px auto; max-width: 800px"></canvas>
+<div id="loader" class="hidden" ></div>
+<div style="display: flex; justify-content: center; align-content: center; " >
+<canvas  id="myChart" style=" margin: 50px auto; max-width: 800px"></canvas>
 </div>
 <script>
+
 var noOfhost={{ hosts }}.length;
 var hostlabels=[];
 for(i=0;i<noOfhost;i++){
@@ -24,6 +26,7 @@ for(i=0;i<noOfhost;i++){
     hostcolor="rgb("+r+","+g+","+b+")";
     bgcolors[i]=hostcolor;
 }
+
 var ctx = document.getElementById("myChart").getContext('2d');
 
 var myChart = new Chart(ctx, {
@@ -31,7 +34,7 @@ var myChart = new Chart(ctx, {
     data: {
     datasets: [{
     	label:"Traffic Summary",
-        data: {{ hosts }},
+        data: {{ hosts }} ,
         backgroundColor:bgcolors
 
     }],
@@ -40,6 +43,22 @@ var myChart = new Chart(ctx, {
  
 }
 });
+myChartElement=document.getElementById("myChart");
+myChartElement.style.display="none";
+var loader= document.getElementById("loader");
+function unhide() {
+    if(loader.className=='hidden'){
+        loader.className = 'unhidden';
+        //load for 10s
+        var countdown=setTimeout(showResult,10000);
+    }
+}
+
+function showResult() {
+  loader.className = "hidden";
+  myChartElement.style.display = "block";
+}
+
 $(document).ready( 
     function () {
 
@@ -66,7 +85,9 @@ $("#myChart").click(
     
 
                         }
-                    );                  
+                    ); 
+
+
                 }
             );
 </script>
