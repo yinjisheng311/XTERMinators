@@ -1,5 +1,5 @@
 #counting number of packets and bandwidth
-sample_interval = 5
+#sample_interval = 5
 interface="wlp3s0"
 privateNet="10.12.0.0/16"
 
@@ -8,10 +8,13 @@ from scapy.all import *
 from collections import Counter
 
 
+ids = deque()
 traffic = Counter()
+
 # You should probably use a cache for your IP resolutions
 hosts = {}
 packet_host={}
+retransmittedPktHosts={}
 combine=[] #number of packets dictionary and speed
 
 def isInNetwork(ipadd):
@@ -42,7 +45,8 @@ def traffic_monitor_callback(pkt):
         elif isInNetwork(pkt.dst):
             intHost = pkt.dst
         else:
-            print("both src and dst are not internal network packets. Weird...")
+            #print("both src and dst are not internal network packets. Weird...")
+            intHost = "extIP"
 
         #counting number of packets    
         if intHost in packet_host:
@@ -52,6 +56,23 @@ def traffic_monitor_callback(pkt):
 
         traffic.update({tuple((intHost,None)):pkt.len})
         #traffic.update({tuple(sorted(map(atol, (pkt.src, pkt.dst)))): pkt.len})
+
+
+	#get number of retransmitted packets
+	global ids
+	if pkt.haslayer(TCP):
+		seqID=pkt[TCP].seq
+		if seqID in ids:
+			#print("DUPLICATEEEE!")
+			if intHost in retransmittedPktHosts:
+				retransmittedPktHosts[intHost] += 1
+			else:
+				retransmittedPktHosts[intHost] = 1
+		else:
+			ids.append(pkt[TCP].seq)
+
+	while (len(ids)>=100):
+		ids.popleft()
 
         
        
@@ -80,7 +101,7 @@ def start_sniffing():
 	return toReturnSpeed, toReturnHost, toReturnCounter
 
 
-def getData():
+def getData(sample_interval):
  
     sniff(iface=interface, prn=traffic_monitor_callback, store=False,timeout=sample_interval)
  
@@ -94,9 +115,9 @@ def getData():
    
  
     #We combine the outputs into one list
-    # [{"type":"host","ip":"ipadd,"bandwidth":"some_speed","packetCount":someInt},
-    #  {"type":"host","ip":"ipadd,"bandwidth":"some_speed","packetCount":someInt},
-    #  {"type":"host","ip":"ipadd,"bandwidth":"some_speed","packetCount":someInt}]
+    # [{"type":"host","ip":"ipadd,"bandwidth":"some_speed","packetCount":someInt, "retransCount":someInt},
+    #  {"type":"host","ip":"ipadd,"bandwidth":"some_speed","packetCount":someInt, "retransCount":someInt},
+    #  {"type":"host","ip":"ipadd,"bandwidth":"some_speed","packetCount":someInt, "retransCount":someInt}]
  
     combinedOutput= []
     for host,counter in packet_host.items():
@@ -115,6 +136,18 @@ def getData():
         if addNewLine:
             combinedOutput.append({"type":"host","ip":host,"packetCount":0,'bandwidth':bandwidth})
  
+    for host,retransCount in retransmittedPktHosts.items():
+       
+        #If host is already in combined output, merely append the bandwidth to it.
+        #otherwise, add a new line
+        addNewLine = True
+        for storedHost in combinedOutput:
+            if host == storedHost['ip']:
+                storedHost['retransCount']=retransCount
+                addNewLine=False
+       
+        if addNewLine:
+            combinedOutput.append({"type":"host","ip":host,"packetCount":0,'bandwidth':"0B/s"})
  
     return combinedOutput
 

@@ -1,7 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
 {%if hostid %}
-<h1>Hi {{ hostid }}</h1>
+<div class="container">
+<h1>{{ hostid["ip"] }}</h1>
+<h4>Type: {{ hostid["type"] }}</h4>
+<h4>Bandwidth: {{ hostid["bandwidth"] }}</h4>
+<h4>Number of packets: {{ hostid["packetCount"] }}</h4>
+<h4>Number of Retransmitted packets: {{ hostid["retransCount"] }}</h4>
+<hr>
+<p>Data is obtained from monitoring the network traffic for a duration of {{ duration }} seconds</p>
+</div>
+<style>
+	div.container {
+		margin:1rem;		
+	}
+</style>
 {% endif %}
 
 {% endblock %}

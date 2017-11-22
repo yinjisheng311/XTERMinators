@@ -2,18 +2,99 @@
 {% block content %}
 <h1 style="text-align: center;margin:50px">Web Traffic Monitor</h1>
 <!-- <div style="margin:50px auto"> -->
-<div style="display: flex; justify-content: center; ">
-<form action="/monitor/" method="post">
-<button type="submit" class="btn btn-outline-warning btn-lg" id="start" >Start Monitoring</button>
-</form>
+<div class="container">
+	<form action="/monitor/" method="post" class="form-con">
+		<div class="duration-con">
+			<span>Duration (current value {{ duration }}s):</span>
+			<br>
+			<input type="text" name="newDuration">
+			<br>
+		</div>
+		<button type="submit" class="btn btn-outline-warning btn-lg" id="start">Start Monitoring</button>
+	</form>
+<div class="graph-con">
+	<div class="bar-con">
+
+		<canvas  id="myBarChart" style="display:block; margin: 50px auto; max-width: 800px"></canvas>
+	</div>
+	<div class="doughnut-con">
+
+		<canvas  id="myChart" style="display:block; margin: 50px auto; max-width: 800px"></canvas>
+	</div>
+</div>
 </div>
 
-<div style="display: flex; justify-content: center; align-content: center; " >
-<canvas  id="myChart" style="display:block margin: 50px auto; max-width: 800px"></canvas>
+
+<h3 style="text-align: left; margin-left: 2rem;">Traffic Analysis</h1>
+<div class="table-con">
+<table class="table">
+    <thead>
+      <tr>
+        <th>IP Address</th>
+        <th>Packet Count</th>
+        <th>Bandwidth</th>
+        <th>Retransmitted Packets</th>
+      </tr>
+    </thead>
+    <tbody>
+	{% for data in hostData2 %}
+      <tr>
+	<td>{{data["ip"]}}</td>
+	<td>{{data["packetCount"]}}</td>
+	<td>{{data["bandwidth"]}}</td>
+	<td>{{data["retransCount"]}}</td>
+      </tr>
+	{% endfor %}
+    </tbody>
+  </table>
 </div>
+<style>
+	div.container {
+		display:flex;
+		justify-content: center;
+		flex-direction: column;
+	}
+	div.duration-con {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		margin-bottom: 2rem;
+	}
+	
+	div.doughnut-con {
+		display: flex; 
+		justify-content: center; 
+		align-content: center;
+		margin-bottom: 1rem;
+
+	}
+	div.bar-con {
+		display: flex; 
+		justify-content: center; 
+		align-content: center;
+		margin-bottom: 1rem;
+
+	}
+	#start {
+		margin-bottom: 1rem;
+	}
+	form.form-con {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+
+	}
+	div.table-con {
+		margin:2rem;
+	}	
+</style>
 <script>
 var hosts={{hosts| safe}};
+//var hostData = ["hi0","hi1"]
+var hostData={{hostData| safe}};
+var bandwidthData = {{bandwidthData| safe}};
 var noOfhost=hosts.length;
+//alert(hostData);
 var bgcolors=[];
 for(i=0;i<noOfhost;i++){
     fraction=255/(noOfhost+2);
@@ -24,9 +105,9 @@ for(i=0;i<noOfhost;i++){
     bgcolors[i]=hostcolor;
 }
 var ctx = document.getElementById("myChart").getContext('2d');
-
-var myChart = new Chart(ctx, {
-    type: 'doughnut',
+var bargraph = document.getElementById("myBarChart").getContext('2d');
+var myChart = new Chart(bargraph, {
+    type: 'bar',
     data: {
     datasets: [{
     	label:"Traffic Summary",
@@ -37,6 +118,39 @@ var myChart = new Chart(ctx, {
 
     labels:{{hosts | safe}}
  
+},
+   options: {
+    tooltips: {
+        callbacks: {
+            label: function(item, data) {
+		return hostData[item.index]
+            }
+        }
+    }
+}
+});
+
+var myBarChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+    datasets: [{
+    	label:"Traffic Summary",
+        data: {{bandwidths | safe }},
+        backgroundColor:bgcolors
+
+    }],
+
+    labels:{{hosts | safe}}
+ 
+},
+   options: {
+    tooltips: {
+        callbacks: {
+            label: function(item, data) {
+		return bandwidthData[item.index]
+            }
+        }
+    }
 }
 });
 
@@ -46,7 +160,6 @@ $(document).ready(
 
 $("#myChart").click( 
         function(evt){
-        	
             var activePoints = myChart.getElementsAtEvent(evt);
             if(activePoints.length > 0)
     {
